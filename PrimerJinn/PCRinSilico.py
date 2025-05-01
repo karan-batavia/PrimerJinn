@@ -1,6 +1,6 @@
 #!/bin/python3
 import os
-import shutil # we're using f"" so we must be on a recent enough Python for shutil.which
+import shutil # we're using f"" so gitS we must be on a recent enough Python for shutil.which
 import subprocess
 import pandas as pd
 from Bio.Seq import Seq
@@ -22,6 +22,8 @@ parser.add_argument('--primer_seq', type=str, help="Primer sequences, one per li
 parser.add_argument('--input_file', type=str, help="Reference FASTA file", required = True)
 parser.add_argument('--output', type=str, help="Output file name", default = "in_silico_PCR")
 parser.add_argument('--Q5', action='store_true', help='Whether to use Q5 approximation settings for Tm calculations.', default=False)
+parser.add_argument('--output_fasta', action='store_true', help='Output amplicon sequences in FASTA format', default=False)
+parser.add_argument('--exclude_primers', action='store_true', help='Exclude primer sequences from FASTA output', default=False)
 
 # check if blastn is in the system path
 if not shutil.which("blastn"):
@@ -227,11 +229,29 @@ def main():
         ref_start = int(ref_start)
         if ref_start > ref_end:
             amplicon_seq = ref_seq[ref_end-1:ref_start]
+            actual_start, actual_end = ref_end, ref_start
         else:
             amplicon_seq = ref_seq[ref_start-1:ref_end]
-        amplicon_seq = str(pf_seq) + str(amplicon_seq) + str(pr_seq)
-        amplicons.append({'Forward_primer':  row['qseq1'], 'Reverse_primer':  row['qseq2'], 'amplicon_seq': amplicon_seq})
+            actual_start, actual_end = ref_start, ref_end
+            
+        full_amplicon = str(pf_seq) + str(amplicon_seq) + str(pr_seq)
+        amplicons.append({
+            'Forward_primer': row['qseq1'], 
+            'Reverse_primer': row['qseq2'], 
+            'amplicon_seq': full_amplicon,
+            'ref_amplicon': str(amplicon_seq),
+            'start': actual_start,
+            'end': actual_end,
+            'reference': row['reference']
+        })
 
+    # Output FASTA if requested
+    if args.output_fasta:
+        with open(f"{out_file}_amplicons.fasta", "w") as fasta_out:
+            for i, amp in enumerate(amplicons, 1):
+                header = f">{amp['reference']}_{amp['start']}_{amp['end']}_{amp['Forward_primer']}_{amp['Reverse_primer']}_{len(amp['amplicon_seq'])}"
+                sequence = amp['ref_amplicon'] if args.exclude_primers else amp['amplicon_seq']
+                fasta_out.write(f"{header}\n{sequence}\n")
 
     tm_data = []
     for pair in itertools.combinations(amplicons, 2):

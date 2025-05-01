@@ -1,6 +1,6 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: primerJinn
-Version: 1.1.1
+Version: 2.0.1
 Summary: In silico PCR tool
 Home-page: https://github.com/SemiQuant/primerJinn
 Author: Jason D Limberis
@@ -20,6 +20,18 @@ Requires-Dist: networkx
 Requires-Dist: scikit-learn
 Requires-Dist: requests
 Requires-Dist: openpyxl
+Requires-Dist: matplotlib
+Requires-Dist: tabulate
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: license
+Dynamic: requires-dist
+Dynamic: summary
 
 <div>
     <img src="https://user-images.githubusercontent.com/8179171/236663567-94d1f5dc-2ac6-49de-9fc1-a99c7a13945d.png" width="20%" height="20%">
